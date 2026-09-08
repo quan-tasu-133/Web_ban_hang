@@ -1,93 +1,114 @@
 import express from "express";
+import pool from "./db/database.js";
 
 const app = express();
 
 app.use(express.json());
 
-let tasks = [
-    {
-        id: 1,
-        title: "Học Node.js",
-        completed: false
-    },
-    {
-        id: 2,
-        title: "Làm bài LeetCode",
-        completed: true
-    }
-];
-
-// GET
 app.get("/", (req, res) => {
     res.json({
         message: "Task Manager API is running"
     });
 });
 
-app.get("/tasks", (req, res) => {
-    res.json(tasks);
-});
+app.get("/tasks", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM tasks");
 
-// POST
-app.post("/tasks", (req, res) => {
-    const { title } = req.body;
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
 
-    const newTask = {
-        id: tasks.length + 1,
-        title: title,
-        completed: false
-    };
-
-    tasks.push(newTask);
-
-    res.status(201).json(newTask);
-});
-
-// PATCH
-app.patch("/tasks/:id", (req, res) => {
-    const id = Number(req.params.id);
-
-    const task = tasks.find(task => task.id === id);
-
-    if (!task) {
-        return res.status(404).json({
-            message: "Task not found"
+        res.status(500).json({
+            message: "Database error"
         });
     }
-
-    const { title, completed } = req.body;
-
-    if (title !== undefined) {
-        task.title = title;
-    }
-
-    if (completed !== undefined) {
-        task.completed = completed;
-    }
-
-    res.json(task);
 });
 
-// DELETE
-app.delete("/tasks/:id", (req, res) => {
-    const id = Number(req.params.id);
+app.post("/tasks", async (req, res) => {
+    try {
+        const { title } = req.body;
 
-    const index = tasks.findIndex(task => task.id === id);
+        const result = await pool.query(
+            "INSERT INTO tasks (title) VALUES ($1) RETURNING *",
+            [title]
+        );
 
-    if (index === -1) {
-        return res.status(404).json({
-            message: "Task not found"
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Database error"
         });
     }
-
-    const deletedTask = tasks.splice(index, 1);
-
-    res.json({
-        message: "Task deleted successfully",
-        task: deletedTask[0]
-    });
 });
 
-app.listen(5000, () => {
+app.patch("/tasks/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, completed } = req.body;
+
+        const result = await pool.query(
+            `UPDATE tasks
+             SET title = COALESCE($1, title),
+                 completed = COALESCE($2, completed)
+             WHERE id = $3
+             RETURNING *`,
+            [title, completed, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Database error"
+        });
+    }
+});
+
+app.delete("/tasks/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(
+            "DELETE FROM tasks WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.json({
+            message: "Task deleted successfully",
+            task: result.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Database error"
+        });
+    }
+});
+
+app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");
+
+    try {
+        await pool.query("SELECT NOW()");
+        console.log("Database connected!");
+    } catch (error) {
+        console.error("Database connection failed:", error.message);
+    }
 });
