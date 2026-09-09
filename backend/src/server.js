@@ -1,18 +1,20 @@
 import express from "express";
+import cors from "cors";
 import pool from "./db/database.js";
-import taskRoutes from "./routes/taskRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
     res.json({
-        message: "Task Manager API is running"
+        message: "Product API is running"
     });
 });
 
-app.use("/tasks", taskRoutes);
+app.use("/products", productRoutes);
 
 app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");
