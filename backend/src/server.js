@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import pool from "./db/database.js";
 import productRoutes from "./routes/productRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import "dotenv/config";
 
 const app = express();
 
@@ -15,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/products", productRoutes);
+app.use("/auth", authRoutes);
 
 app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");
