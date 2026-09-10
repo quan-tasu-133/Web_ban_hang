@@ -118,3 +118,108 @@ export const login = async (req, res) => {
         });
     }
 };
+
+export const updateName = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { name } = req.body;
+
+        if (!name || name.trim() === "") {
+            return res.status(400).json({
+                message: "Tên không được để trống"
+            });
+        }
+
+        const result = await pool.query(
+            `UPDATE users
+             SET name = $1
+             WHERE id = $2
+             RETURNING id, name, email, created_at`,
+            [name.trim(), userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy người dùng"
+            });
+        }
+
+        res.json({
+            message: "Đổi tên thành công",
+            user: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Không thể đổi tên"
+        });
+    }
+};
+
+export const updatePassword = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                message: "Vui lòng nhập đầy đủ mật khẩu"
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                message: "Mật khẩu mới phải có ít nhất 6 ký tự"
+            });
+        }
+
+        const result = await pool.query(
+            "SELECT password FROM users WHERE id = $1",
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy người dùng"
+            });
+        }
+
+        const user = result.rows[0];
+
+        const isPasswordCorrect = await bcrypt.compare(
+            currentPassword,
+            user.password
+        );
+
+        if (!isPasswordCorrect) {
+            return res.status(400).json({
+                message: "Mật khẩu hiện tại không đúng"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        );
+
+        await pool.query(
+            `UPDATE users
+             SET password = $1
+             WHERE id = $2`,
+            [hashedPassword, userId]
+        );
+
+        res.json({
+            message: "Đổi mật khẩu thành công"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Không thể đổi mật khẩu"
+        });
+    }
+};

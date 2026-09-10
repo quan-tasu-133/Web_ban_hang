@@ -3,6 +3,8 @@ import cors from "cors";
 import pool from "./db/database.js";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import { authMiddleware } from "./middleware/authMiddleware.js";
 import "dotenv/config";
 
 const app = express();
@@ -16,8 +18,37 @@ app.get("/", (req, res) => {
     });
 });
 
+app.get("/profile", authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, name, email, created_at
+             FROM users
+             WHERE id = $1`,
+            [req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy người dùng"
+            });
+        }
+
+        res.json({
+            user: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Không thể lấy thông tin tài khoản"
+        });
+    }
+});
+
 app.use("/products", productRoutes);
 app.use("/auth", authRoutes);
+app.use("/cart", cartRoutes);
 
 app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");
