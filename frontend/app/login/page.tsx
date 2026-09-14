@@ -14,7 +14,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
 
     // Đăng nhập tài khoản thường
-    const handleLogin = async (e) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setError("");
@@ -38,7 +38,7 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message);
+                throw new Error(data.message || "Đăng nhập thất bại");
             }
 
             // Nếu tài khoản là Admin nhưng đăng nhập thường
@@ -53,8 +53,8 @@ export default function LoginPage() {
 
             router.push("/");
 
-        } catch (error) {
-            setError(error.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
         } finally {
             setLoading(false);
         }
@@ -83,7 +83,7 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message);
+                throw new Error(data.message || "Đăng nhập thất bại");
             }
 
             // Kiểm tra quyền Admin
@@ -100,8 +100,8 @@ export default function LoginPage() {
             // → vào Admin ngay
             router.push("/admin");
 
-        } catch (error) {
-            setError(error.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
         } finally {
             setLoading(false);
         }

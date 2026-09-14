@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, User } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    const [profile, setProfile] = useState(null);
+    const [profile, setProfile] = useState<User | null>(null);
 
     useEffect(() => {
         if (loading) return;

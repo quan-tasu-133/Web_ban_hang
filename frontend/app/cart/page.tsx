@@ -72,12 +72,18 @@ export default function CartPage() {
                     >
 
                         {/* IMAGE */}
-                        <div className="w-32 h-32 bg-gray-100 flex items-center justify-center">
-                            <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-full h-full object-contain"
-                            />
+                        <div className="w-32 h-32 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden flex-shrink-0">
+                            {item.image ? (
+                                <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-full h-full object-contain p-2"
+                                />
+                            ) : (
+                                <span className="text-gray-400 text-sm">
+                                    Ảnh SP
+                                </span>
+                            )}
                         </div>
 
                         {/* INFO */}

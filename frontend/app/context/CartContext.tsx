@@ -4,17 +4,38 @@ import {
     createContext,
     useContext,
     useEffect,
-    useState
+    useState,
+    useCallback,
+    ReactNode
 } from "react";
 import { useAuth } from "./AuthContext";
+import { Product } from "../components/ProductCard";
 
+export interface CartItem {
+    id: number;
+    product_id: number;
+    quantity: number;
+    name: string;
+    brand: string;
+    price: number | string;
+    image?: string;
+}
 
+export interface CartContextType {
+    cart: CartItem[];
+    loading: boolean;
+    addToCart: (product: Product | { id: number; [key: string]: unknown }) => Promise<void>;
+    increaseQuantity: (productId: number) => Promise<void>;
+    decreaseQuantity: (productId: number) => Promise<void>;
+    removeFromCart: (productId: number) => Promise<void>;
+    clearCart: () => Promise<void>;
+}
 
-const CartContext = createContext(null);
+const CartContext = createContext<CartContextType | null>(null);
 
-export function CartProvider({ children }) {
+export function CartProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     // =========================
@@ -27,7 +48,7 @@ export function CartProvider({ children }) {
     // =========================
     // Lấy giỏ hàng từ backend
     // =========================
-    const fetchCart = async () => {
+    const fetchCart = useCallback(async () => {
         try {
             const token = getToken();
 
@@ -52,26 +73,26 @@ export function CartProvider({ children }) {
 
             const data = await response.json();
 
-            setCart(data.items);
+            setCart(data.items || []);
 
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     // =========================
-    // Khi Context được tạo
+    // Khi Context được tạo hoặc User thay đổi
     // =========================
     useEffect(() => {
         fetchCart();
-    }, [user]);
+    }, [user, fetchCart]);
 
     // =========================
     // Thêm sản phẩm
     // =========================
-    const addToCart = async (product) => {
+    const addToCart = async (product: Product | { id: number; [key: string]: unknown }) => {
         try {
             const token = getToken();
 
@@ -110,7 +131,7 @@ export function CartProvider({ children }) {
     // =========================
     // Tăng số lượng
     // =========================
-    const increaseQuantity = async (productId) => {
+    const increaseQuantity = async (productId: number) => {
         try {
             const token = getToken();
 
@@ -144,7 +165,7 @@ export function CartProvider({ children }) {
     // =========================
     // Giảm số lượng
     // =========================
-    const decreaseQuantity = async (productId) => {
+    const decreaseQuantity = async (productId: number) => {
         try {
             const token = getToken();
 
@@ -183,7 +204,7 @@ export function CartProvider({ children }) {
     // =========================
     // Xóa sản phẩm
     // =========================
-    const removeFromCart = async (productId) => {
+    const removeFromCart = async (productId: number) => {
         try {
             const token = getToken();
 
@@ -245,6 +266,10 @@ export function CartProvider({ children }) {
     );
 }
 
-export function useCart() {
-    return useContext(CartContext);
+export function useCart(): CartContextType {
+    const context = useContext(CartContext);
+    if (!context) {
+        throw new Error("useCart phải được sử dụng bên trong CartProvider");
+    }
+    return context;
 }

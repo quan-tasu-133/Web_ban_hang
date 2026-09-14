@@ -14,7 +14,7 @@ export default function RegisterPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleRegister = async (e) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setError("");
@@ -39,7 +39,7 @@ export default function RegisterPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.message);
+                setError(data.message || "Đăng ký thất bại");
                 return;
             }
 
@@ -47,8 +47,8 @@ export default function RegisterPage() {
 
             router.push("/login");
 
-        } catch (error) {
-            setError("Không thể kết nối tới server");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Không thể kết nối tới server");
         } finally {
             setLoading(false);
         }

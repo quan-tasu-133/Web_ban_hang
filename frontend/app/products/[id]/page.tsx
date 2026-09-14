@@ -3,27 +3,55 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useCart } from "../../context/CartContext";
+import { Product } from "../../components/ProductCard";
 
 export default function ProductDetail() {
     const params = useParams();
+    const productId = params?.id;
 
-    const [product, setProduct] = useState(null);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const { cart,addToCart } = useCart();
+    const { cart, addToCart } = useCart();
+
+    const currentItem = cart.find(
+        (item) => item.product_id === Number(productId)
+    );
+    const currentQuantity = currentItem ? currentItem.quantity : 0;
 
     useEffect(() => {
-        fetch(`http://localhost:5000/products/${params.id}`)
-            .then((response) => response.json())
-            .then((data) => {
+        if (!productId) return;
+
+        fetch(`http://localhost:5000/products/${productId}`)
+            .then((response) => {
+                if (!response.ok) throw new Error("Không thể tải sản phẩm");
+                return response.json();
+            })
+            .then((data: Product) => {
                 setProduct(data);
             })
             .catch((error) => {
                 console.error("Lỗi:", error);
+            })
+            .finally(() => {
+                setLoading(false);
             });
-    }, [params.id]);
+    }, [productId]);
+
+    if (loading) {
+        return (
+            <div className="max-w-5xl mx-auto px-6 py-10">
+                <p>Đang tải thông tin sản phẩm...</p>
+            </div>
+        );
+    }
 
     if (!product) {
-        return <p>Đang tải...</p>;
+        return (
+            <div className="max-w-5xl mx-auto px-6 py-10">
+                <p>Không tìm thấy sản phẩm.</p>
+            </div>
+        );
     }
 
     return (
@@ -31,10 +59,18 @@ export default function ProductDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-                <div className="h-96 bg-gray-100 flex items-center justify-center rounded-lg">
-                    <span className="text-gray-400">
-                        Ảnh sản phẩm
-                    </span>
+                <div className="h-96 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden border">
+                    {product.image ? (
+                        <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-contain p-4"
+                        />
+                    ) : (
+                        <span className="text-gray-400">
+                            Ảnh sản phẩm
+                        </span>
+                    )}
                 </div>
 
                 <div>
@@ -51,23 +87,23 @@ export default function ProductDetail() {
                         {Number(product.price).toLocaleString("vi-VN")} VNĐ
                     </p>
 
-                    <p className="mt-6">
-                        {product.description}
+                    <p className="mt-6 text-gray-700 leading-relaxed whitespace-pre-line">
+                        {product.description || "Chưa có mô tả chi tiết."}
                     </p>
 
-                    <p className="mt-4">
-                        Tồn kho: {product.stock}
+                    <p className="mt-4 text-sm text-gray-600">
+                        Tồn kho: <span className="font-semibold">{product.stock}</span>
                     </p>
 
                     <button
                         onClick={() => addToCart(product)} 
-                        className="bg-black text-white px-6 py-3 rounded-lg mt-8"
-                                            >
+                        className="bg-black text-white px-8 py-3 rounded-lg mt-8 hover:bg-gray-800 transition-colors font-medium"
+                    >
                         Thêm vào giỏ hàng
                     </button>
 
-                    <p className="mt-4">
-                        Số sản phẩm trong giỏ hàng: {cart.length}
+                    <p className="mt-4 text-sm text-gray-500">
+                        Số lượng sản phẩm này trong giỏ hàng: <span className="font-semibold text-black">{currentQuantity}</span>
                     </p>
 
                 </div>

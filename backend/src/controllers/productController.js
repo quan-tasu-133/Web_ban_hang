@@ -1,15 +1,41 @@
 import pool from "../db/database.js";
 
-//GET
+// GET ALL or SEARCH/FILTER
 export const getProducts = async (req, res) => {
     try {
-        const result = await pool.query(
-            "SELECT * FROM products ORDER BY id ASC"
-        );
+        const { search, brand, sort } = req.query;
+
+        let query = "SELECT * FROM products WHERE 1=1";
+        const params = [];
+
+        // 1. Tìm kiếm theo từ khóa (tên, hãng, mô tả)
+        if (search && search.trim() !== "") {
+            params.push(`%${search.trim()}%`);
+            query += ` AND (name ILIKE $${params.length} OR brand ILIKE $${params.length} OR description ILIKE $${params.length})`;
+        }
+
+        // 2. Lọc theo hãng
+        if (brand && brand.trim() !== "") {
+            params.push(brand.trim());
+            query += ` AND brand ILIKE $${params.length}`;
+        }
+
+        // 3. Sắp xếp
+        if (sort === "price_asc") {
+            query += " ORDER BY price ASC";
+        } else if (sort === "price_desc") {
+            query += " ORDER BY price DESC";
+        } else if (sort === "newest") {
+            query += " ORDER BY id DESC";
+        } else {
+            query += " ORDER BY id ASC";
+        }
+
+        const result = await pool.query(query, params);
 
         res.json(result.rows);
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi getProducts:", error);
 
         res.status(500).json({
             message: "Không thể lấy danh sách sản phẩm"

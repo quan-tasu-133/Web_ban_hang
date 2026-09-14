@@ -4,13 +4,29 @@ import {
     createContext,
     useContext,
     useEffect,
-    useState
+    useState,
+    ReactNode
 } from "react";
 
-const AuthContext = createContext(null);
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    role?: string;
+    created_at?: string;
+}
 
-export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+export interface AuthContextType {
+    user: User | null;
+    loading: boolean;
+    login: (token: string, userData: User) => void;
+    logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -18,13 +34,17 @@ export function AuthProvider({ children }) {
         const savedUser = localStorage.getItem("user");
 
         if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
+            try {
+                setUser(JSON.parse(savedUser));
+            } catch (e) {
+                console.error("Lỗi parse user từ localStorage:", e);
+            }
         }
 
         setLoading(false);
     }, []);
 
-    const login = (token, userData) => {
+    const login = (token: string, userData: User) => {
         localStorage.setItem("token", token);
         localStorage.setItem(
             "user",
@@ -55,6 +75,10 @@ export function AuthProvider({ children }) {
     );
 }
 
-export function useAuth() {
-    return useContext(AuthContext);
+export function useAuth(): AuthContextType {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error("useAuth phải được sử dụng bên trong AuthProvider");
+    }
+    return context;
 }

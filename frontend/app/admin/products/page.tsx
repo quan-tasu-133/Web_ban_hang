@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { Product } from "../../components/ProductCard";
 
 export default function AdminProductsPage() {
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [editingId, setEditingId] = useState(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
 
     const [name, setName] = useState("");
     const [brand, setBrand] = useState("");
@@ -15,7 +16,7 @@ export default function AdminProductsPage() {
     const [image, setImage] = useState("");
     const [stock, setStock] = useState("");
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             const response = await fetch(
                 "http://localhost:5000/products"
@@ -23,19 +24,19 @@ export default function AdminProductsPage() {
 
             const data = await response.json();
 
-            setProducts(data);
+            setProducts(data || []);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
-    const handleCreateProduct = async (e) => {
+    const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
@@ -68,7 +69,7 @@ export default function AdminProductsPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message);
+                throw new Error(data.message || "Thao tác thất bại");
             }
 
             setName("");
@@ -83,58 +84,71 @@ export default function AdminProductsPage() {
 
             fetchProducts();
 
-        } catch (error) {
-            alert(error.message);
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
         }
     };
 
-    const handleEditProduct = (product) => {
+    const handleEditProduct = (product: Product) => {
         setEditingId(product.id);
 
         setName(product.name);
         setBrand(product.brand);
-        setPrice(product.price);
+        setPrice(String(product.price));
         setDescription(product.description || "");
         setImage(product.image || "");
-        setStock(product.stock);
+        setStock(String(product.stock));
 
         setShowForm(true);
     };
 
-    const handleDeleteProduct = async (id) => {
-            const confirmDelete = window.confirm(
-                "Bạn có chắc muốn xóa sản phẩm này?"
+    const handleCancelEdit = () => {
+        setEditingId(null);
+
+        setName("");
+        setBrand("");
+        setPrice("");
+        setDescription("");
+        setImage("");
+        setStock("");
+
+        setShowForm(false);
+    };
+
+    const handleDeleteProduct = async (id: number) => {
+        const confirmDelete = window.confirm(
+            "Bạn có chắc muốn xóa sản phẩm này?"
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                `http://localhost:5000/products/${id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
 
-            if (!confirmDelete) {
-                return;
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Không thể xóa sản phẩm");
             }
 
-            try {
-                const token = localStorage.getItem("token");
+            fetchProducts();
 
-                const response = await fetch(
-                    `http://localhost:5000/products/${id}`,
-                    {
-                        method: "DELETE",
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message);
-                }
-
-                fetchProducts();
-
-            } catch (error) {
-                alert(error.message);
-            }
-        };
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+        }
+    };
 
     if (loading) {
         return (
@@ -159,12 +173,18 @@ export default function AdminProductsPage() {
                 </div>
 
                 <button
-                    onClick={() => setShowForm(!showForm)}
+                    onClick={() => {
+                        if (editingId) {
+                            handleCancelEdit();
+                        } else {
+                            setShowForm(!showForm);
+                        }
+                    }}
                     className="bg-black text-white px-5 py-3 rounded-lg"
                 >
                     {showForm
                         ? "Đóng"
-                        : "+ Thêm sản phẩm"}
+                        : "Thêm sản phẩm"}
                 </button>
             </div>
 
@@ -231,14 +251,28 @@ export default function AdminProductsPage() {
                         required
                     />
 
-                    <button
-                        type="submit"
-                        className="bg-black text-white px-5 py-3 rounded-lg"
-                    >
-                        {editingId
-                            ? "Cập nhật sản phẩm"
-                            : "Thêm sản phẩm"}
-                    </button>
+                    <div className="flex gap-3">
+
+                        <button
+                            type="submit"
+                            className="bg-black text-white px-5 py-3 rounded-lg"
+                        >
+                            {editingId
+                                ? "Cập nhật sản phẩm"
+                                : "Thêm sản phẩm"}
+                        </button>
+
+                        {editingId && (
+                            <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="border border-gray-300 px-5 py-3 rounded-lg"
+                            >
+                                Hủy
+                            </button>
+                        )}
+
+                    </div>
                 </form>
             )}
 
