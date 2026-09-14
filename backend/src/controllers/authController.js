@@ -106,7 +106,8 @@ export const login = async (req, res) => {
             user: {
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 
@@ -223,3 +224,4 @@ export const updatePassword = async (req, res) => {
         });
     }
 };
+

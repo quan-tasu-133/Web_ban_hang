@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-
 
 export default function LoginPage() {
     const router = useRouter();
@@ -12,10 +10,10 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Đăng nhập tài khoản thường
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -40,91 +38,148 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.message);
+                throw new Error(data.message);
+            }
+
+            // Nếu tài khoản là Admin nhưng đăng nhập thường
+            if (data.user.role === "admin") {
+                setError(
+                    "Đây là tài khoản Admin. Vui lòng chọn \"Đăng nhập với Admin\""
+                );
                 return;
             }
 
             login(data.token, data.user);
 
-            alert("Đăng nhập thành công");
-
             router.push("/");
 
         } catch (error) {
-            setError("Không thể kết nối tới server");
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Đăng nhập Admin
+    const handleAdminLogin = async () => {
+        setError("");
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                "http://localhost:5000/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            // Kiểm tra quyền Admin
+            if (data.user.role !== "admin") {
+                setError(
+                    "Tài khoản này không có quyền Admin"
+                );
+                return;
+            }
+
+            // Đúng Admin → đăng nhập ngay
+            login(data.token, data.user);
+
+            // → vào Admin ngay
+            router.push("/admin");
+
+        } catch (error) {
+            setError(error.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-full max-w-md border rounded-lg p-8">
+        <div className="max-w-md mx-auto mt-16 px-6">
 
-                <h1 className="text-3xl font-bold mb-6">
-                    Đăng nhập
-                </h1>
+            <h1 className="text-3xl font-bold text-center mb-2">
+                Đăng nhập
+            </h1>
 
-                <form
-                    onSubmit={handleLogin}
-                    className="space-y-4"
+            <p className="text-center text-gray-500 mb-8">
+                Đăng nhập vào tài khoản của bạn
+            </p>
+
+            {/* FORM ĐĂNG NHẬP THƯỜNG */}
+            <form
+                onSubmit={handleLogin}
+                className="space-y-4"
+            >
+
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
+                    required
+                />
+
+                <input
+                    type="password"
+                    placeholder="Mật khẩu"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black"
+                    required
+                />
+
+                {error && (
+                    <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-3">
+                        {error}
+                    </div>
+                )}
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-black text-white rounded-lg py-3 disabled:opacity-50"
                 >
+                    {loading
+                        ? "Đang đăng nhập..."
+                        : "Đăng nhập"}
+                </button>
 
-                    <div>
-                        <label className="block mb-1">
-                            Email
-                        </label>
+            </form>
 
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="example@gmail.com"
-                        />
-                    </div>
+            <div className="my-6 flex items-center gap-3">
+                <div className="h-px bg-gray-300 flex-1"></div>
 
-                    <div>
-                        <label className="block mb-1">
-                            Password
-                        </label>
+                <span className="text-gray-500">
+                    hoặc
+                </span>
 
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="••••••••"
-                        />
-                    </div>
-
-                    {error && (
-                        <p className="text-red-600">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-black text-white py-2 rounded"
-                    >
-                        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                    </button>
-
-                </form>
-
-                <p className="mt-6 text-center">
-                    Chưa có tài khoản?{" "}
-                    <Link
-                        href="/register"
-                        className="font-bold"
-                    >
-                        Đăng ký
-                    </Link>
-                </p>
-
+                <div className="h-px bg-gray-300 flex-1"></div>
             </div>
+
+            {/* ĐĂNG NHẬP ADMIN */}
+            <button
+                type="button"
+                onClick={handleAdminLogin}
+                disabled={loading}
+                className="w-full border border-gray-300 rounded-lg py-3 hover:bg-gray-50 disabled:opacity-50"
+            >
+                🛡️ Đăng nhập với Admin
+            </button>
+
         </div>
     );
 }

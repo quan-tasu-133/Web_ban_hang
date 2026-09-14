@@ -3,6 +3,7 @@ import cors from "cors";
 import pool from "./db/database.js";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
 import "dotenv/config";
@@ -49,6 +50,7 @@ app.get("/profile", authMiddleware, async (req, res) => {
 app.use("/products", productRoutes);
 app.use("/auth", authRoutes);
 app.use("/cart", cartRoutes);
+app.use("/admin", adminRoutes);
 
 app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");
