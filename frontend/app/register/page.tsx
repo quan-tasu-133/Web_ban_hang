@@ -43,7 +43,7 @@ export default function RegisterPage() {
                 return;
             }
 
-            alert("Đăng ký thành công");
+            alert("Đăng ký thành công! Hãy đăng nhập vào tài khoản của bạn.");
 
             router.push("/login");
 
@@ -55,87 +55,90 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-full max-w-md border rounded-lg p-8">
+        <div className="max-w-md mx-auto mt-16 px-6">
 
-                <h1 className="text-3xl font-bold mb-6">
-                    Đăng ký
-                </h1>
+            <h1 className="text-3xl font-bold text-center mb-2">
+                Tạo tài khoản
+            </h1>
 
-                <form
-                    onSubmit={handleRegister}
-                    className="space-y-4"
+            <p className="text-center text-gray-500 mb-8">
+                Đăng ký để mua sắm và theo dõi đơn hàng
+            </p>
+
+            <form
+                onSubmit={handleRegister}
+                className="space-y-4"
+            >
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Họ và tên *
+                    </label>
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black text-sm"
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Địa chỉ Email *
+                    </label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black text-sm"
+                        placeholder="example@gmail.com"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mật khẩu *
+                    </label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-black text-sm"
+                        placeholder="Tối thiểu 6 ký tự"
+                        minLength={6}
+                        required
+                    />
+                </div>
+
+                {error && (
+                    <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-3 text-sm">
+                        {error}
+                    </div>
+                )}
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-black text-white font-medium rounded-lg py-3 hover:bg-gray-800 transition-colors disabled:opacity-50 mt-2"
                 >
+                    {loading ? "Đang đăng ký..." : "Tạo tài khoản"}
+                </button>
 
-                    <div>
-                        <label className="block mb-1">
-                            Họ tên
-                        </label>
+            </form>
 
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="Nguyễn Văn A"
-                        />
-                    </div>
+            <p className="mt-8 text-center text-sm text-gray-600">
+                Đã có tài khoản?{" "}
+                <Link
+                    href="/login"
+                    className="font-bold text-black hover:underline"
+                >
+                    Đăng nhập
+                </Link>
+            </p>
 
-                    <div>
-                        <label className="block mb-1">
-                            Email
-                        </label>
-
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="example@gmail.com"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block mb-1">
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="••••••••"
-                        />
-                    </div>
-
-                    {error && (
-                        <p className="text-red-600">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-black text-white py-2 rounded"
-                    >
-                        {loading ? "Đang đăng ký..." : "Đăng ký"}
-                    </button>
-
-                </form>
-
-                <p className="mt-6 text-center">
-                    Đã có tài khoản?{" "}
-                    <Link
-                        href="/login"
-                        className="font-bold"
-                    >
-                        Đăng nhập
-                    </Link>
-                </p>
-
-            </div>
         </div>
     );
 }

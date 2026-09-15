@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
@@ -143,7 +144,7 @@ export default function LoginPage() {
                 />
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-3">
+                    <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg px-4 py-3 text-sm">
                         {error}
                     </div>
                 )}
@@ -151,7 +152,7 @@ export default function LoginPage() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-black text-white rounded-lg py-3 disabled:opacity-50"
+                    className="w-full bg-black text-white font-medium rounded-lg py-3 hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                     {loading
                         ? "Đang đăng nhập..."
@@ -163,7 +164,7 @@ export default function LoginPage() {
             <div className="my-6 flex items-center gap-3">
                 <div className="h-px bg-gray-300 flex-1"></div>
 
-                <span className="text-gray-500">
+                <span className="text-gray-500 text-sm">
                     hoặc
                 </span>
 
@@ -175,10 +176,21 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleAdminLogin}
                 disabled={loading}
-                className="w-full border border-gray-300 rounded-lg py-3 hover:bg-gray-50 disabled:opacity-50"
+                className="w-full border border-gray-300 rounded-lg py-3 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
                 🛡️ Đăng nhập với Admin
             </button>
+
+            {/* ĐĂNG KÝ */}
+            <p className="mt-8 text-center text-sm text-gray-600">
+                Chưa có tài khoản?{" "}
+                <Link
+                    href="/register"
+                    className="font-bold text-black hover:underline"
+                >
+                    Đăng ký ngay
+                </Link>
+            </p>
 
         </div>
     );

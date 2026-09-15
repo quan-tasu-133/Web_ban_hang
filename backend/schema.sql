@@ -1,4 +1,4 @@
-﻿-- Database: phone_shop (hoặc tên tương đương)
+﻿-- Database: task_manager (hoặc phone_shop)
 
 -- 1. Bảng USERS
 CREATE TABLE IF NOT EXISTS users (
@@ -39,6 +39,49 @@ CREATE TABLE IF NOT EXISTS cart_items (
     CONSTRAINT unique_cart_product UNIQUE(cart_id, product_id)
 );
 
+-- 5. Bảng COUPONS (Mã giảm giá)
+CREATE TABLE IF NOT EXISTS coupons (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    discount_type VARCHAR(20) NOT NULL, -- 'percentage' hoặc 'fixed_amount'
+    discount_value NUMERIC(15, 2) NOT NULL,
+    min_order_value NUMERIC(15, 2) DEFAULT 0,
+    max_discount_amount NUMERIC(15, 2),
+    usage_limit INT DEFAULT NULL,
+    used_count INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Bảng ORDERS (Đơn hàng)
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(50) NOT NULL,
+    customer_address TEXT NOT NULL,
+    payment_method VARCHAR(50) DEFAULT 'COD',
+    coupon_code VARCHAR(50),
+    discount_amount NUMERIC(15, 2) DEFAULT 0,
+    total_price NUMERIC(15, 2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'processing', 'shipping', 'completed', 'cancelled'
+    note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. Bảng ORDER_ITEMS (Chi tiết đơn hàng)
+CREATE TABLE IF NOT EXISTS order_items (
+    id SERIAL PRIMARY KEY,
+    order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id INT REFERENCES products(id) ON DELETE SET NULL,
+    product_name VARCHAR(255) NOT NULL,
+    product_image TEXT,
+    price NUMERIC(15, 2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- DỮ LIỆU MẪU (Mật khẩu: 123456)
 INSERT INTO users (name, email, password, role)
 VALUES 
@@ -52,3 +95,9 @@ VALUES
     ('Samsung Galaxy S24 Ultra 256GB', 'Samsung', 27490000, 'Galaxy AI thông minh, khung viền Titanium, bút S-Pen tích hợp.', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80', 18),
     ('Xiaomi 14 Ultra 512GB', 'Xiaomi', 24990000, 'Ống kính quang học Leica huyền thoại, cảm biến 1 inch, Snapdragon 8 Gen 3.', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80', 12)
 ON CONFLICT DO NOTHING;
+
+INSERT INTO coupons (code, discount_type, discount_value, min_order_value, max_discount_amount)
+VALUES 
+    ('GIAM100K', 'fixed_amount', 100000, 500000, NULL),
+    ('SALE10', 'percentage', 10, 0, 500000)
+ON CONFLICT (code) DO NOTHING;

@@ -16,9 +16,10 @@ export const authMiddleware = (req, res, next) => {
         const token = authHeader.split(" ")[1];
 
         // 4. Kiểm tra token
+        const jwtSecret = process.env.JWT_SECRET || "phone_shop_secret_123456";
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET
+            jwtSecret
         );
 
         // 5. Lưu userId vào request

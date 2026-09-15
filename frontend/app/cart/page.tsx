@@ -160,11 +160,12 @@ export default function CartPage() {
 
             </div>
 
-            <button
-                className="mt-6 w-full bg-black text-white py-3 rounded-lg"
+            <Link
+                href="/checkout"
+                className="mt-6 block text-center w-full bg-black text-white py-3.5 rounded-lg hover:bg-gray-800 transition-colors font-medium text-lg"
             >
-                Thanh toán
-            </button>
+                Tiến hành thanh toán →
+            </Link>
 
         </div>
     );

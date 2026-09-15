@@ -95,7 +95,25 @@ export default function Navbar() {
                                     href="/admin/products"
                                     className={`hover:text-black font-medium ${pathname === "/admin/products" ? "text-black font-bold" : ""}`}
                                 >
-                                    Quản lý sản phẩm
+                                    Sản phẩm
+                                </Link>
+                                <Link
+                                    href="/admin/orders"
+                                    className={`hover:text-black font-medium ${pathname === "/admin/orders" ? "text-black font-bold" : ""}`}
+                                >
+                                    Đơn hàng
+                                </Link>
+                                <Link
+                                    href="/admin/coupons"
+                                    className={`hover:text-black font-medium ${pathname === "/admin/coupons" ? "text-black font-bold" : ""}`}
+                                >
+                                    Mã giảm giá
+                                </Link>
+                                <Link
+                                    href="/admin/users"
+                                    className={`hover:text-black font-medium ${pathname === "/admin/users" ? "text-black font-bold" : ""}`}
+                                >
+                                    Người dùng
                                 </Link>
                                 <Link
                                     href="/"
@@ -135,9 +153,18 @@ export default function Navbar() {
                                 </Link>
                             )}
 
+                            {!isAdminPage && (
+                                <Link
+                                    href="/orders"
+                                    className="text-sm font-medium hover:text-black text-gray-700 whitespace-nowrap"
+                                >
+                                    📦 Đơn hàng
+                                </Link>
+                            )}
+
                             <Link
                                 href="/profile"
-                                className="whitespace-nowrap font-medium"
+                                className="whitespace-nowrap font-medium text-sm"
                             >
                                 👤 {user.name}
                             </Link>

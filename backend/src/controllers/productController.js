@@ -43,6 +43,24 @@ export const getProducts = async (req, res) => {
     }
 };
 
+// GET DISTINCT BRANDS
+export const getBrands = async (req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL AND TRIM(brand) != '' ORDER BY brand ASC"
+        );
+
+        const brands = result.rows.map(row => row.brand);
+        res.json(brands);
+    } catch (error) {
+        console.error("Lỗi getBrands:", error);
+
+        res.status(500).json({
+            message: "Không thể lấy danh sách thương hiệu"
+        });
+    }
+};
+
 //GET by ID
 export const getProductById = async (req, res) => {
     try {

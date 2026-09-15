@@ -15,8 +15,24 @@ function ProductList() {
 
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [brands, setBrands] = useState<string[]>(["Tất cả"]);
 
-    const brands = ["Tất cả", "Apple", "Samsung", "Xiaomi"];
+    // Lấy danh sách thương hiệu thực tế từ database
+    useEffect(() => {
+        fetch("http://localhost:5000/products/brands")
+            .then((res) => {
+                if (!res.ok) throw new Error("Không thể lấy brands");
+                return res.json();
+            })
+            .then((data: string[]) => {
+                if (Array.isArray(data)) {
+                    setBrands(["Tất cả", ...data]);
+                }
+            })
+            .catch((err) => {
+                console.error("Lỗi lấy brands:", err);
+            });
+    }, []);
 
     useEffect(() => {
         setLoading(true);

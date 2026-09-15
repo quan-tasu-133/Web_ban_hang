@@ -89,11 +89,12 @@ export const login = async (req, res) => {
         }
 
         // 4. Tạo JWT
+        const jwtSecret = process.env.JWT_SECRET || "phone_shop_secret_123456";
         const token = jwt.sign(
             {
                 userId: user.id
             },
-            process.env.JWT_SECRET,
+            jwtSecret,
             {
                 expiresIn: "7d"
             }

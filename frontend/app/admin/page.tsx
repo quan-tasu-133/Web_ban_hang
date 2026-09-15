@@ -27,29 +27,48 @@ export default function AdminPage() {
                     </h2>
 
                     <p className="text-gray-500">
-                        Quản lý điện thoại
+                        Quản lý điện thoại, giá và kho hàng
                     </p>
                 </Link>
 
-                <div className="border rounded-xl p-6">
+                <Link
+                    href="/admin/coupons"
+                    className="border rounded-xl p-6 block hover:bg-gray-50 transition-colors"
+                >
+                    <h2 className="text-xl font-bold mb-2">
+                        🎟️ Mã giảm giá
+                    </h2>
+
+                    <p className="text-gray-500">
+                        Quản lý voucher giảm theo % hoặc tiền mặt
+                    </p>
+                </Link>
+
+                <Link
+                    href="/admin/orders"
+                    className="border rounded-xl p-6 block hover:bg-gray-50 transition-colors"
+                >
                     <h2 className="text-xl font-bold mb-2">
                         📦 Đơn hàng
                     </h2>
 
                     <p className="text-gray-500">
-                        Quản lý đơn hàng
+                        Quản lý và đổi trạng thái đơn hàng khách đặt
                     </p>
-                </div>
+                </Link>
 
-                <div className="border rounded-xl p-6">
+                <Link
+                    href="/admin/users"
+                    className="border rounded-xl p-6 block hover:bg-gray-50 transition-colors"
+                >
                     <h2 className="text-xl font-bold mb-2">
                         👥 Người dùng
                     </h2>
 
                     <p className="text-gray-500">
-                        Quản lý tài khoản
+                        Quản lý tài khoản, phân quyền Admin/User
                     </p>
-                </div>
+                </Link>
 
             </div>
         </div>

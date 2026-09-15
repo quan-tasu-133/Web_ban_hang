@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuth, User } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -86,6 +87,15 @@ export default function ProfilePage() {
                     <p className="text-lg font-medium">
                         {profile.id}
                     </p>
+                </div>
+
+                <div className="pt-4 border-t flex flex-wrap gap-4">
+                    <Link
+                        href="/orders"
+                        className="bg-black text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+                    >
+                        📦 Lịch sử đơn hàng của tôi
+                    </Link>
                 </div>
             </div>
         </main>
