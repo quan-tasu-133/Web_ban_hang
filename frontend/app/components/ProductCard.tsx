@@ -10,9 +10,14 @@ export interface Product {
     description?: string;
     image?: string;
     stock: number;
+    avg_rating?: string | number;
+    total_reviews?: number;
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+    const ratingNum = Number(product.avg_rating || 0);
+    const reviewCount = Number(product.total_reviews || 0);
+
     return (
         <div className="border rounded-lg p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
             <div>
@@ -34,9 +39,21 @@ export default function ProductCard({ product }: { product: Product }) {
                     {product.name}
                 </h2>
 
-                <p className="text-gray-500 text-sm">
-                    {product.brand}
-                </p>
+                <div className="flex items-center justify-between mt-1">
+                    <p className="text-gray-500 text-sm">
+                        {product.brand}
+                    </p>
+
+                    {reviewCount > 0 ? (
+                        <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                            <span>★</span>
+                            <span>{ratingNum.toFixed(1)}</span>
+                            <span className="text-gray-400 font-normal">({reviewCount})</span>
+                        </div>
+                    ) : (
+                        <span className="text-xs text-gray-400">Chưa có đánh giá</span>
+                    )}
+                </div>
 
                 <p className="text-red-500 font-bold mt-2 text-lg">
                     {Number(product.price).toLocaleString("vi-VN")} VNĐ

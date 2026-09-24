@@ -12,6 +12,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    phone?: string | null;
+    address?: string | null;
     role?: string;
     created_at?: string;
 }
@@ -21,6 +23,7 @@ export interface AuthContextType {
     loading: boolean;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    updateUser: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -61,13 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     };
 
+    const updateUser = (userData: User) => {
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
+    };
+
     return (
         <AuthContext.Provider
             value={{
                 user,
                 loading,
                 login,
-                logout
+                logout,
+                updateUser
             }}
         >
             {children}

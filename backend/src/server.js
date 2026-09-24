@@ -7,6 +7,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
 import "dotenv/config";
 
@@ -34,7 +35,7 @@ app.get("/", (req, res) => {
 app.get("/profile", authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, name, email, created_at
+            `SELECT id, name, email, phone, address, role, created_at
              FROM users
              WHERE id = $1`,
             [req.userId]
@@ -65,6 +66,7 @@ app.use("/cart", cartRoutes);
 app.use("/coupons", couponRoutes);
 app.use("/orders", orderRoutes);
 app.use("/admin", adminRoutes);
+app.use("/", reviewRoutes);
 
 app.listen(5000, async () => {
     console.log("Server running at http://localhost:5000");

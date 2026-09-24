@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -33,12 +33,14 @@ export default function CheckoutPage() {
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
-    // Auto-fill user's name if available
+    // Auto-fill user's info if available
     useEffect(() => {
-        if (user && !customerName) {
-            setCustomerName(user.name);
+        if (user) {
+            if (!customerName && user.name) setCustomerName(user.name);
+            if (!customerPhone && user.phone) setCustomerPhone(user.phone);
+            if (!customerAddress && user.address) setCustomerAddress(user.address);
         }
-    }, [user, customerName]);
+    }, [user, customerName, customerPhone, customerAddress]);
 
     // Redirect if not logged in
     useEffect(() => {

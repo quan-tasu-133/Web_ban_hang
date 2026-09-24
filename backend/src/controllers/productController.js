@@ -5,30 +5,40 @@ export const getProducts = async (req, res) => {
     try {
         const { search, brand, sort } = req.query;
 
-        let query = "SELECT * FROM products WHERE 1=1";
+        let query = `
+            SELECT 
+                p.*,
+                COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS avg_rating,
+                COUNT(r.id)::int AS total_reviews
+            FROM products p
+            LEFT JOIN reviews r ON p.id = r.product_id
+            WHERE 1=1
+        `;
         const params = [];
 
         // 1. Tìm kiếm theo từ khóa (tên, hãng, mô tả)
         if (search && search.trim() !== "") {
             params.push(`%${search.trim()}%`);
-            query += ` AND (name ILIKE $${params.length} OR brand ILIKE $${params.length} OR description ILIKE $${params.length})`;
+            query += ` AND (p.name ILIKE $${params.length} OR p.brand ILIKE $${params.length} OR p.description ILIKE $${params.length})`;
         }
 
         // 2. Lọc theo hãng
         if (brand && brand.trim() !== "") {
             params.push(brand.trim());
-            query += ` AND brand ILIKE $${params.length}`;
+            query += ` AND p.brand ILIKE $${params.length}`;
         }
+
+        query += " GROUP BY p.id";
 
         // 3. Sắp xếp
         if (sort === "price_asc") {
-            query += " ORDER BY price ASC";
+            query += " ORDER BY p.price ASC";
         } else if (sort === "price_desc") {
-            query += " ORDER BY price DESC";
+            query += " ORDER BY p.price DESC";
         } else if (sort === "newest") {
-            query += " ORDER BY id DESC";
+            query += " ORDER BY p.id DESC";
         } else {
-            query += " ORDER BY id ASC";
+            query += " ORDER BY p.id ASC";
         }
 
         const result = await pool.query(query, params);
@@ -67,7 +77,14 @@ export const getProductById = async (req, res) => {
         const { id } = req.params;
 
         const result = await pool.query(
-            "SELECT * FROM products WHERE id = $1",
+            `SELECT 
+                p.*,
+                COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS avg_rating,
+                COUNT(r.id)::int AS total_reviews
+             FROM products p
+             LEFT JOIN reviews r ON p.id = r.product_id
+             WHERE p.id = $1
+             GROUP BY p.id`,
             [id]
         );
 

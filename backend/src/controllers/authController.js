@@ -121,6 +121,47 @@ export const login = async (req, res) => {
     }
 };
 
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { name, phone, address } = req.body;
+
+        if (!name || name.trim() === "") {
+            return res.status(400).json({
+                message: "Họ và tên không được để trống"
+            });
+        }
+
+        const result = await pool.query(
+            `UPDATE users
+             SET name = $1,
+                 phone = $2,
+                 address = $3
+             WHERE id = $4
+             RETURNING id, name, email, phone, address, role, created_at`,
+            [name.trim(), phone ? phone.trim() : null, address ? address.trim() : null, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy người dùng"
+            });
+        }
+
+        res.json({
+            message: "Cập nhật thông tin tài khoản thành công",
+            user: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error("Lỗi updateProfile:", error);
+
+        res.status(500).json({
+            message: "Không thể cập nhật thông tin cá nhân"
+        });
+    }
+};
+
 export const updateName = async (req, res) => {
     try {
         const userId = req.userId;
@@ -136,7 +177,7 @@ export const updateName = async (req, res) => {
             `UPDATE users
              SET name = $1
              WHERE id = $2
-             RETURNING id, name, email, created_at`,
+             RETURNING id, name, email, phone, address, role, created_at`,
             [name.trim(), userId]
         );
 
