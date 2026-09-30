@@ -67,8 +67,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 }
             );
 
+            if (response.status === 401) {
+                // Token đã hết hạn hoặc không hợp lệ -> xóa token cũ an toàn
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                setCart([]);
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error("Không thể lấy giỏ hàng");
+                console.warn("Không thể lấy giỏ hàng từ máy chủ:", response.status);
+                setCart([]);
+                return;
             }
 
             const data = await response.json();
@@ -76,7 +86,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             setCart(data.items || []);
 
         } catch (error) {
-            console.error(error);
+            console.error("Lỗi tải giỏ hàng:", error);
+            setCart([]);
         } finally {
             setLoading(false);
         }
@@ -97,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const token = getToken();
 
             if (!token) {
-                alert("Vui lòng đăng nhập");
+                alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
                 return;
             }
 
@@ -116,15 +127,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 }
             );
 
+            if (response.status === 401) {
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = "/login";
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error("Không thể thêm sản phẩm");
+                const errData = await response.json().catch(() => ({}));
+                alert(errData.message || "Không thể thêm sản phẩm vào giỏ");
+                return;
             }
 
             // Lấy lại cart từ database
             await fetchCart();
 
         } catch (error) {
-            console.error(error);
+            console.error("Lỗi addToCart:", error);
         }
     };
 
